@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -8,9 +10,11 @@ import (
 
 func main() {
 	router := gin.Default()
+
 	router.GET("/books", getBooks)
 	router.GET("/books/:id", getBookByID)
 	router.POST("/books", postbooks)
+	router.POST("/upload", upload)
 
 	router.Run("localhost:8080")
 }
@@ -51,4 +55,17 @@ func getBookByID(c *gin.Context) {
 		}
 	}
 	c.JSON(http.StatusNotFound, gin.H{"error": "book not found"})
+}
+
+func upload(c *gin.Context) {
+	file, _ := c.FormFile("file")
+	log.Println(file.Filename)
+
+	// upload the file to specific destination
+	err := c.SaveUploadedFile(file, "./files/"+file.Filename)
+	if err != nil {
+		log.Println(err.Error())
+	}
+
+	c.String(http.StatusOK, fmt.Sprintf("'%s' uploaded!", file.Filename))
 }
